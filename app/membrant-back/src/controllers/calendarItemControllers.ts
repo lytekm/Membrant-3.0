@@ -12,6 +12,7 @@ export const getCalendarItem = async (req: Request, res: Response) => {
      res.status(404).json({ message: 'Calendar item not found' });
      return;
     }
+    console.log(item);
     res.json(item);
 };
 
