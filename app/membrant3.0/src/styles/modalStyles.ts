@@ -20,4 +20,6 @@ export const modalContent = css`
   padding: var(--space-lg);
   max-width: 600px;
   width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
 `;

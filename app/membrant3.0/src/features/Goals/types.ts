@@ -31,6 +31,15 @@ export interface Goal {
   intent: GoalIntent;
   startDate: string;
   targetDate?: string;
+  completionDefinition?: string;
+  steps?: string;
+  habitName?: string;
+  frequency?: number;
+  startingValue?: number;
+  targetValue?: number;
+  unit?: string;
+  selectedPlan?: string;
+  schedule?: { week: number; allowed: number }[];
   metric: {
     _id: string;
     name: string;

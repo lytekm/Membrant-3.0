@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { textInput, dateInput } from '@/styles/inputStyles';
 import { buttonPrimary, buttonSecondary } from '@/styles/buttonStyles';
 import separator from '@/styles/separator';
-import { GoalIntent } from '../types';
+import { GoalIntent, Goal } from '../types';
 import { useGoals } from '../GoalsContext';
 import { ProjectGoalForm } from './forms/ProjectGoalForm';
 import { HabitGoalForm } from './forms/HabitGoalForm';
@@ -71,8 +71,8 @@ export const StepDefineGoal = ({ intent, onBack, onClose }: {
       <p>Now let's gather some specifics:</p>
 
       {intent === 'Project' && <ProjectGoalForm setGoalData={setGoalData} />}
-      {intent === 'DailyAction' && <HabitGoalForm mode="build" setGoalData={setGoalData} />}
-      {intent === 'HabitBreaking' && <HabitGoalForm mode="break" setGoalData={setGoalData} />}
+      {intent === 'DailyAction' && <HabitGoalForm mode="build" setGoalData={setGoalData} goalData={goalData} />}
+      {intent === 'HabitBreaking' && <HabitGoalForm mode="break" setGoalData={setGoalData} goalData={goalData}/>}
       {intent === 'NumericalGoal' && <NumericalGoalForm setGoalData={setGoalData} />}
       {intent === 'PremadePlan' && <PremadePlanForm setGoalData={setGoalData} />}
 
