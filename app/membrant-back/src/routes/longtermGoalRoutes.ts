@@ -5,14 +5,15 @@ import {
   createGoal,
   updateGoal,
   deleteGoal,
-} from '../controllers/longtermGoalControllers';
+} from '../controllers/goalsControllers';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-router.get('/', getGoals);
-router.get('/:id', getGoal);
-router.post('/', createGoal);
-router.put('/:id', updateGoal);
-router.delete('/:id', deleteGoal);
+router.get('/', protect, getGoals);
+router.get('/:id', protect, getGoal);
+router.post('/', protect, createGoal);
+router.put('/:id', protect, updateGoal);
+router.delete('/:id', protect, deleteGoal);
 
 export default router;

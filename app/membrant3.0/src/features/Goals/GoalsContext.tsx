@@ -1,14 +1,31 @@
 "use client";
 
 /** @jsxImportSource @emotion/react */
-import React, { createContext, useContext, useState, useMemo, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  ReactNode,
+  useEffect,
+} from 'react';
 import { Goal } from '@/features/Goals/types';
+import {
+  getGoals,
+  getGoal,
+  createGoal,
+  updateGoal as updateGoalAPI,
+  deleteGoal as deleteGoalAPI,
+} from '@/api/services/goalService';
+
+import { useError } from '@/globalContexts/errorContext';
+import { useAuth } from '@/globalContexts/UserContext';
 
 interface GoalsContextType {
   goals: Goal[];
-  addGoal: (goal: Omit<Goal, '_id' | 'createdAt' | 'updatedAt'>) => void;
-  updateGoal: (goalId: string, updates: Partial<Goal>) => void;
-  deleteGoal: (goalId: string) => void;
+  addGoal: (goal: Goal) => Promise<void>;
+  updateGoal: (goalId: string, updates: Partial<Goal>) => Promise<void>;
+  deleteGoal: (goalId: string) => Promise<void>;
   getGoalById: (goalId: string) => Goal | undefined;
   resetGoals: () => void;
 }
@@ -18,32 +35,38 @@ const GoalsContext = createContext<GoalsContextType | undefined>(undefined);
 export const GoalsProvider = ({ children }: { children: ReactNode }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
 
-  const addGoal = (goal: Omit<Goal, '_id' | 'createdAt' | 'updatedAt'>) => {
-    const newGoal: Goal = {
-      ...goal,
-      _id: Math.random().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setGoals((prev) => [...prev, newGoal]);
+  const { showError } = useError();
+  const { user } = useAuth();
+
+  // Load goals from API on mount
+  useEffect(() => {
+    (async () => {
+      const fetchedGoals = await getGoals(showError);
+      setGoals(fetchedGoals);
+    })();
+  }, []);
+
+  const addGoal = async (goal: Goal) => {
+    const newGoal = await createGoal(showError, goal);
+    if (newGoal) {
+      setGoals((prev) => [...prev, newGoal]);
+    }
   };
 
-  const updateGoal = (goalId: string, updates: Partial<Goal>) => {
-    setGoals((prev) =>
-      prev.map((g) =>
-        g._id === goalId
-          ? {
-              ...g,
-              ...updates,
-              updatedAt: new Date().toISOString(),
-            }
-          : g
-      )
-    );
+  const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
+    const updated = await updateGoalAPI(showError, goalId, updates);
+    if (updated) {
+      setGoals((prev) =>
+        prev.map((g) => (g._id === goalId ? { ...g, ...updated } : g))
+      );
+    }
   };
 
-  const deleteGoal = (goalId: string) => {
-    setGoals((prev) => prev.filter((g) => g._id !== goalId));
+  const deleteGoal = async (goalId: string) => {
+    const success = await deleteGoalAPI(showError, goalId);
+    if (success) {
+      setGoals((prev) => prev.filter((g) => g._id !== goalId));
+    }
   };
 
   const getGoalById = (goalId: string) => {

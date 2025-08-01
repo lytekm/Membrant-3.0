@@ -1,4 +1,3 @@
-// src/context/UserContext.tsx
 'use client';
 
 import React, {
@@ -10,7 +9,7 @@ import React, {
   FC,
 } from 'react';
 import { User } from '@/Types/Types';
-import { API_BASE } from '../api/base';
+import { api } from '../api/base';
 import { useError } from './errorContext';
 
 interface AuthContextType {
@@ -30,19 +29,15 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    fetch(`${API_BASE}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          localStorage.removeItem('token');
-          throw new Error('Session expired');
-        }
-        const data: User = await res.json();
-        setUser(data);
+    api.get<User>('/auth/me')
+      .then((res) => {
+        setUser(res.data);
       })
-      .catch((err) => showError(err.message));
-  }, [showError]);
+      .catch(() => {
+        localStorage.removeItem('token');
+        showError('Session expired');
+      });
+  }, []);
 
   const signup = async (
     name: string,
@@ -50,25 +45,17 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     password: string
   ): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+      const res = await api.post<{ user: User; token: string }>('/auth/signup', {
+        name,
+        email,
+        password,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        showError(err.message || 'Signup failed');
-        return false;
-      }
-      const { user: u, token } = (await res.json()) as {
-        user: User;
-        token: string;
-      };
-      localStorage.setItem('token', token);
-      setUser(u);
+
+      localStorage.setItem('token', res.data.token);
+      setUser(res.data.user);
       return true;
-    } catch {
-      showError('Network error during signup');
+    } catch (err: any) {
+      showError(err?.response?.data?.message || 'Signup failed');
       return false;
     }
   };
@@ -78,40 +65,25 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     password: string
   ): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const res = await api.post<{ user: User; token: string }>('/auth/login', {
+        email,
+        password,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        showError(err.message || 'Login failed');
-        return false;
-      }
-      const { user: u, token } = (await res.json()) as {
-        user: User;
-        token: string;
-      };
-      localStorage.setItem('token', token);
-      setUser(u);
+
+      localStorage.setItem('token', res.data.token);
+      setUser(res.data.user);
       return true;
-    } catch {
-      showError('Network error during login');
+    } catch (err: any) {
+      showError(err?.response?.data?.message || 'Login failed');
       return false;
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        await fetch(`${API_BASE}/api/auth/logout`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+      await api.post('/auth/logout');
     } catch {
-      /* ignore */
+      // Ignore errors on logout
     } finally {
       localStorage.removeItem('token');
       setUser(null);

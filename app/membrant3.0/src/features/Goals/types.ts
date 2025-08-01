@@ -57,6 +57,7 @@ export interface Goal {
   linkedTaskIds?: string[];
   tags?: string[];
   status: 'In Progress' | 'Completed' | 'Stuck' | 'Paused';
+  user: string;
   createdAt: string;
   updatedAt: string;
 }

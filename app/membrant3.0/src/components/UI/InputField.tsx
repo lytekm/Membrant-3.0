@@ -43,9 +43,13 @@ type InputFieldProps = {
   error?: string;
   value?: string | number;
   options?: { value: string; label: string }[]; // only for select
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   placeholder?: string;
   inputCss?: any;
+
+  // updated typing: supports both full event and direct value
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => void | ((value: string | number) => void);
 };
 
 export const InputField = ({
@@ -69,9 +73,7 @@ export const InputField = ({
       case 'select':
         return selectInput;
       case 'text':
-        return textInput;
       case 'text-area':
-        return textInput;
       default:
         return textInput;
     }
@@ -86,8 +88,25 @@ export const InputField = ({
     `}
   `;
 
-return (
-  <div css={fieldWrapper}>
+  const handleValueChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    if (typeof onChange === 'function') {
+      // call value-driven change if user passed in (value) => void
+      if (onChange.length === 1 && typeof e.target.value !== 'object') {
+        const val = type === 'number' ? Number(e.target.value) : e.target.value;
+        const onChangeWithValue = (value: string | number) => {
+          onChange(e); // call the original onChange function with the event
+        };
+        onChangeWithValue(val);
+      } else {
+        onChange(e); // call the original onChange function with the event
+      }
+    }
+  };
+
+  return (
+    <div css={fieldWrapper}>
       {label && <label htmlFor={name} css={labelCss}>{label}</label>}
 
       {type === 'select' ? (
@@ -95,7 +114,7 @@ return (
           name={name}
           id={name}
           value={value}
-          onChange={onChange}
+          onChange={handleValueChange}
           css={baseInputStyle}
         >
           {placeholder && <option value="">{placeholder}</option>}
@@ -110,7 +129,7 @@ return (
           name={name}
           id={name}
           value={value}
-          onChange={onChange}
+          onChange={handleValueChange}
           placeholder={placeholder}
           css={css`
             ${baseInputStyle};
@@ -125,7 +144,7 @@ return (
           name={name}
           id={name}
           value={value}
-          onChange={onChange}
+          onChange={handleValueChange}
           placeholder={placeholder}
           css={baseInputStyle}
         />

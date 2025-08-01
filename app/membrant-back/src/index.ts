@@ -10,17 +10,23 @@ const app = express();
 // 1) Enable CORS
 app.use(
   cors({
-    origin: 'http://localhost:3000',  // your Next.js dev URL
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,                // if you ever send or receive cookies
+    credentials: true,
   })
 );
 
 // 2) Built-in middleware
 app.use(express.json());
 
-// connect & routes
+// 3) Log incoming API requests
+app.use('/api', (req, res, next) => {
+  console.log(`➡️ ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// 4) Connect DB & setup routes
 connectDB();
 app.use('/api', apiRouter);
 

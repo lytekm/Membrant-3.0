@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
 router.use('/users', userRoutes);
 router.use('/notes', noteRoutes);
 router.use('/projects', projectRoutes);
-router.use('/longtermgoals', longTermGoalRoutes);
+router.use('/goals', longTermGoalRoutes);
 router.use('/dailyitems', dailyItemRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/calendaritems', calendarItemRoutes);

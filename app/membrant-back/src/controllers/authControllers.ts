@@ -130,6 +130,7 @@ export const getMe = async (
     }
     res.json(user);
   } catch (err) {
+    console.error(err);
     next(err);
   }
 };
