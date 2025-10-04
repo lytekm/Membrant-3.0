@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Goal, IGoal } from '../models/Goal';
+import { Project, IProject } from '../models/Project';
 
 // GET /goals - fetch all goals for a user (auth should be required for prod)
 export const getGoals = async (
@@ -46,6 +47,18 @@ export const createGoal = async (
     };
 
     console.log(data);
+    
+
+    if(data.intent === "Project"){
+      const projectData = {
+        title: data.title,
+        description: data.description,
+        dueDate: data.targetDate,
+        user: req.userId
+      }
+      const project = new Project(projectData);
+      await project.save();
+    }
 
     const newGoal = new Goal(data);
     const savedGoal = await newGoal.save();
